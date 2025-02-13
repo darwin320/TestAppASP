@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Productos</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Formulario de Producto</h2>
+    <form id="productoForm">
+        <label>Nombre: <input type="text" id="nombre" required></label><br>
+        <label>Precio: <input type="number" id="precio" required min="1" max="10000"></label><br>
+        <label>Fecha Registro: <input type="date" id="fechaRegistro" required></label><br>
+        <label>Email: <input type="email" id="email" required></label><br>
+        <button type="submit">Guardar</button>
+    </form>
+
+    <h2>Lista de Productos</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Fecha</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaProductos"></tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            function cargarProductos() {
+                $.get("/api/producto", function (data) {
+                    let filas = "";
+                    data.forEach(p => {
+                        filas += `<tr>
+                            <td>${p.id}</td>
+                            <td>${p.nombre}</td>
+                            <td>${p.precio}</td>
+                            <td>${p.fechaRegistro}</td>
+                            <td>${p.email}</td>
+                            <td><button onclick="eliminar(${p.id})">Eliminar</button></td>
+                        </tr>`;
+                    });
+                    $("#tablaProductos").html(filas);
+                });
+            }
+
+            $("#productoForm").submit(function (e) {
+                e.preventDefault();
+                let producto = {
+                    nombre: $("#nombre").val(),
+                    precio: $("#precio").val(),
+                    fechaRegistro: $("#fechaRegistro").val(),
+                    email: $("#email").val()
+                };
+                $.post("/api/producto", producto, function () {
+                    cargarProductos();
+                });
+            });
+
+            window.eliminar = function (id) {
+                $.ajax({
+                    url: `/api/producto/${id}`,
+                    type: 'DELETE',
+                    success: function () {
+                        cargarProductos();
+                    }
+                });
+            };
+
+            cargarProductos();
+        });
+    </script>
+</body>
+</html>
